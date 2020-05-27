@@ -27,9 +27,22 @@ void initList()
     INITIATED = true;
 }
 
+/*
+-------------------------------------------------------
+insert(int elem, int pos)
+
+Adiciona um elemento à uma posição específica da lista
+Entradas: 
+    elem: Dado a ser inserido na lista
+    pos: Posição onde esse dado será inserido na lista
+Saida:
+    se o dado foi adicionado retorna "true"
+    se o dado não foi adicionado retirna "false"
+-------------------------------------------------------
+*/
 bool insert(int elem, int pos)
 {
-    if (pos > SIZE) 
+    if (pos > SIZE) // Não adiciona caso a posição é maior que o tamanho da lista
         return false;
     
     if (SIZE == 0) // Adiciona o primeiro elemento     
@@ -70,6 +83,13 @@ bool insert(int elem, int pos)
     
 }
 
+/*
+------------------------------
+printList()
+
+imprime os elementos da lista
+------------------------------
+*/
 void printList()
 {
     Node* node_aux = HEADER;
