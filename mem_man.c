@@ -11,6 +11,8 @@ int main()
     insert(3, 2);
     insert(4,1);
     insert(4,1);
+    insert_end(5);
+    removeList(SIZE-1);
 
     printList();
 
