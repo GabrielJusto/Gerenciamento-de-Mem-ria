@@ -20,19 +20,30 @@ typedef struct Node
     int data;
 }Node;
 
-struct Node* HEADER;
-struct Node* TAIL;
-int SIZE;
-bool INITIATED = false;
+struct Node* HEADER;//Inicio da lista
+struct Node* TAIL;//Fim da lista
+int SIZE; //Tamanho da Lista
+bool INITIATED = false; //Evita que a lista seja iniciada mais de uma vez
 
-void initList()
+
+/*
+----------------------------------------------
+initList()
+Inicia a lista
+Saída:
+    se a lista foi criada retirna "true"
+    se a lista não foi criada retorna "false"
+----------------------------------------------
+*/
+bool initList()
 {
-    if (INITIATED)
-        return;
+    if (INITIATED) 
+        return false;
     HEADER = (Node*)malloc(sizeof(Node));
     TAIL = HEADER;
     SIZE = 0;
     INITIATED = true;
+    return true;
 }
 
 /*
@@ -62,7 +73,7 @@ bool insert(int elem, int pos)
     }
     
 
-
+    //Aloca memória para o novo nodo
     Node* new_node = (Node*) malloc(sizeof(Node));
     new_node -> data = elem;
     Node* node_aux;
@@ -77,11 +88,12 @@ bool insert(int elem, int pos)
         return true;
     }
 
-    // adiciona no meio da lista
+    // Adiciona o elemeto na posição "pos"
     node_aux = HEADER;
-    for (int i = 0; i < pos; i++) // caminha até a posição
+    for (int i = 0; i < pos; i++) // Caminha até a posição
         node_aux = node_aux -> next;
     
+
     node_aux -> prev -> next = new_node;
     new_node -> next = node_aux;
     new_node -> prev = node_aux -> prev;
@@ -112,10 +124,12 @@ void insert_end(int elem)
         return;
     }
 
+    //Aloca memória para o novo nodo
     Node* new_node = (Node*) malloc(sizeof(Node));
     new_node -> data = elem;
     Node* node_aux = TAIL;
 
+    //Adiciona o elemento no fim da fila
     TAIL = new_node;
     TAIL -> prev = node_aux;
     node_aux -> next = TAIL;
@@ -138,13 +152,13 @@ bool removeList(int pos)
     if (pos >= SIZE) //Posição fora da lista
         return false;
 
-    if (pos == 0)
+    if (pos == 0) // Remove da primeira posição da lista
     {
         HEADER = HEADER -> next;
         SIZE--;
         return true;
     }
-    if (pos == SIZE-1)
+    if (pos == SIZE-1)// Remove da última posição da lista
     {
         TAIL = TAIL -> prev;
         SIZE --;
@@ -154,7 +168,7 @@ bool removeList(int pos)
     
     Node* node_aux = HEADER;
 
-    for (int i = 0; i < pos; i++)   
+    for (int i = 0; i < pos; i++) // Caminha até a posição "pos"
         node_aux = node_aux -> next;
     
     node_aux -> prev -> next = node_aux -> next;
