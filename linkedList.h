@@ -1,7 +1,7 @@
 /*
 ------------------------------------------------------
 Gabriel Bonatto Justo - gabriel.justo@acad.pucrs.br
-
+Gabriel Pereira Paiz - gabriel.paiz@edu.pucrs.br
 ------------------------------------------------------
 */
 
@@ -17,92 +17,263 @@ typedef struct Node
 {
     struct Node* prev;
     struct Node* next;
+    int size;
     int data;
+    bool free;
 }Node;
 
 struct Node* HEADER;//Inicio da lista
 struct Node* TAIL;//Fim da lista
+struct Node* NEXT_FIT_PT;
+int NEXT_COUNT;
 int SIZE; //Tamanho da Lista
 bool INITIATED = false; //Evita que a lista seja iniciada mais de uma vez
+int FREE_SPACE; //total de espaço livre na memória
 
 
 /*
 ----------------------------------------------
 initList()
 Inicia a lista
+Entradas:
+    size: Tamanho da memória
 Saída:
     se a lista foi criada retirna "true"
     se a lista não foi criada retorna "false"
 ----------------------------------------------
 */
-bool initList()
+bool initList(int size)
 {
     if (INITIATED) 
         return false;
     HEADER = (Node*)malloc(sizeof(Node));
+    HEADER->size = size;
+    HEADER->free = true;
     TAIL = HEADER;
-    SIZE = 0;
+    SIZE = 1;
     INITIATED = true;
+    FREE_SPACE = size;
+    NEXT_FIT_PT = HEADER;
+    NEXT_COUNT = 0;
     return true;
 }
 
-/*
--------------------------------------------------------
-insert(int elem, int pos)
 
-Adiciona um elemento à uma posição específica da lista
-Entradas: 
-    elem: Dado a ser inserido na lista
-    pos: Posição onde esse dado será inserido na lista
-Saída:
-    se o dado foi adicionado retorna "true"
-    se o dado não foi adicionado retirna "false"
--------------------------------------------------------
-*/
-bool insert(int elem, int pos)
+bool insert_mem(struct Node *node_free, struct Node *new_node, int pos)
 {
-    if (pos > SIZE) // Não adiciona caso a posição é maior que o tamanho da lista
+    
+    int size = new_node->size;
+    int elem = new_node->data;
+     if(pos == -1)//não encontrou nenhum espaço
+    {
+        printf("foi aqui \n");
+        // printf("elem %d, size %d, aux %d, aux_size %d \n", elem, size,node_aux->data, node_aux->size);
+        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %d \n", elem);
         return false;
-    
-    if (SIZE == 0) // Adiciona o primeiro elemento     
-    {
-        HEADER -> data = elem;
-        TAIL = HEADER;
-        SIZE ++;
+    }
+
+    if(pos == 0 && HEADER->size == size)
+    {       
+        new_node->next = HEADER->next;
+        HEADER->next->prev = new_node;
+        HEADER = new_node;
+        FREE_SPACE -= size;
+        HEADER->free = false;
+        node_free->free = false;
         return true;
     }
     
-
-    //Aloca memória para o novo nodo
-    Node* new_node = (Node*) malloc(sizeof(Node));
-    new_node -> data = elem;
-    Node* node_aux;
-
-    if (pos == SIZE) // Adiciona no fim da lista
+     if (pos == SIZE-1)
     {
-        node_aux = TAIL;
+
+        if (node_free->size - size != 0)
+            TAIL->size -= new_node->size;
+               
+        new_node->prev = TAIL;
+        TAIL->next = new_node;
         TAIL = new_node;
-        TAIL -> prev = node_aux;
-        node_aux -> next = TAIL;
+        TAIL->free = false;
+
+
         SIZE ++;
+        FREE_SPACE -= size;
+        printf("eh tail \n");
         return true;
     }
 
-    // Adiciona o elemeto na posição "pos"
-    node_aux = HEADER;
-    for (int i = 0; i < pos; i++) // Caminha até a posição
-        node_aux = node_aux -> next;
-    
+    if (node_free->size - size == 0)
+    {
+        node_free->data = new_node->data;
+        node_free->free = false;
+        FREE_SPACE -= size;
+        return true;
+    }
 
-    node_aux -> prev -> next = new_node;
-    new_node -> next = node_aux;
-    new_node -> prev = node_aux -> prev;
-    node_aux -> prev = new_node;
-    SIZE ++;
-    return true;
     
+    new_node->next = node_free->next;
+    new_node->prev = node_free;
+    node_free->next = new_node;
+    new_node->next->prev = new_node;
+    node_free->size -= new_node->size;
+    
+    SIZE++;
+    FREE_SPACE -= size;
+
+   return true;
 }
 
+bool insert_next_fit(int elem, int size)
+{
+    if (size > FREE_SPACE)
+    {
+        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %d \n", elem);
+        return false;
+    }
+
+    struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
+    new_node->size = size;
+    new_node->free = false;
+    new_node->data = elem;
+
+    if (SIZE == 1)
+    {
+        new_node->prev = HEADER;
+        HEADER->next = new_node;
+        HEADER->size -= new_node->size;
+        TAIL = new_node;
+        SIZE++;
+        FREE_SPACE -= size;
+        return true;        
+    }
+
+    struct Node* node_aux = NEXT_FIT_PT;
+    int count = -1;
+    for (int i = 0; i < SIZE-1; i++)
+    {   
+        // printf("next: %d, count: %d, next->free %d, next->size %d \n", NEXT_FIT_PT->data, NEXT_COUNT, NEXT_FIT_PT->free, NEXT_FIT_PT->size);
+        // printf("aux: %d, count: %d, aux->free %d, aux->size %d \n", node_aux->data, NEXT_COUNT, node_aux->free, node_aux->size);
+        // printf("SIZE %d \n", SIZE);
+        // printf("size %d \n", size);
+        // printf("i %d \n", i);
+
+        if (node_aux->free && node_aux->size >= size)
+        {
+            
+            NEXT_FIT_PT = node_aux;
+            count = NEXT_COUNT;
+            break;
+        }
+        
+        
+        if (NEXT_COUNT == SIZE-1)
+        {
+            // printf("entrei qui %d \n", NEXT_COUNT);
+            node_aux = HEADER;
+            NEXT_COUNT = 0;
+        }else
+        {
+            node_aux = node_aux->next;
+            NEXT_COUNT ++;     
+        }  
+         
+    
+    }
+    printf("passei do if\n");
+    insert_mem(NEXT_FIT_PT, new_node, count);
+
+}
+bool insert_first_fit(int elem, int size)
+{
+    if (size > FREE_SPACE)
+    {
+        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %d \n", elem);
+        return false;
+    }
+
+    struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
+    new_node->size = size;
+    new_node->free = false;
+    new_node->data = elem;
+
+    if (SIZE == 1)
+    {
+        new_node->prev = HEADER;
+        HEADER->next = new_node;
+        HEADER->size -= new_node->size;
+        TAIL = new_node;
+        SIZE++;
+        FREE_SPACE -= size;
+        return true;        
+    }
+
+    struct Node* node_aux = HEADER;
+    struct Node* first_node = node_aux;
+
+    int count = -1;
+    for (int i = 0; i < SIZE-1; i++)
+    {   
+        if (node_aux->free && node_aux->size >= size)
+        {
+            first_node = node_aux;
+            count = i;
+            break;
+        }
+        node_aux = node_aux->next;     
+    }
+
+    insert_mem(first_node, new_node, count);  
+}
+
+
+
+
+
+
+
+bool insert_worst_fit(int elem, int size)
+{
+    if (size > FREE_SPACE)
+    {
+        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %d \n", elem);
+        return false;
+    }
+
+    struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
+    new_node->size = size;
+    new_node->free = false;
+    new_node->data = elem;
+
+    if (SIZE == 1)
+    {
+        new_node->prev = HEADER;
+        HEADER->next = new_node;
+        HEADER->size -= new_node->size;
+        TAIL = new_node;
+        SIZE++;
+        FREE_SPACE -= size;
+        return true;        
+    }
+
+    struct Node* node_aux = HEADER;
+    struct Node* worst_node = node_aux;
+
+    while (!worst_node->free)//caminha até o primeiro nodo livre
+        worst_node = worst_node->next;
+    node_aux = worst_node;
+
+    int count = -1;
+    for (int i = 0; i < SIZE-1; i++)
+    {   
+        if (node_aux->free && node_aux->size - size >= worst_node->size - size && node_aux->size >= size)
+        {
+            worst_node = node_aux;
+            count = i;
+        }
+        node_aux = node_aux->next;     
+    }  
+
+    return insert_mem(worst_node, new_node, count);
+}
 
 /*
 -------------------------------------------------------
@@ -111,30 +282,54 @@ insert(int elem)
 Adiciona um elemento na ultima posição da lista
 Entradas: 
     elem: Dado a ser inserido na lista
+    size: tamanho que o novo nodo ocupará na memória
 -------------------------------------------------------
 */
-void insert_end(int elem)
+bool insert_best_fit(int elem, int size)
 {
-  
-    if (SIZE == 0) // Adiciona o primeiro elemento     
+    
+    if (size > FREE_SPACE)
     {
-        HEADER -> data = elem;
-        TAIL = HEADER;
-        SIZE ++;
-        return;
+        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %d \n", elem);
+        return false;
     }
 
-    //Aloca memória para o novo nodo
-    Node* new_node = (Node*) malloc(sizeof(Node));
-    new_node -> data = elem;
-    Node* node_aux = TAIL;
+    struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
+    new_node->size = size;
+    new_node->free = false;
+    new_node->data = elem;
+    if (SIZE == 1)
+    {
+        new_node->prev = HEADER;
+        HEADER->next = new_node;
+        HEADER->size -= new_node->size;
+        TAIL = new_node;
+        SIZE++;
+        FREE_SPACE -= size;
+        return true;        
+    }
+    
+    struct Node* node_aux = HEADER;
+    struct Node* best_node = node_aux;
 
-    //Adiciona o elemento no fim da fila
-    TAIL = new_node;
-    TAIL -> prev = node_aux;
-    node_aux -> next = TAIL;
-    SIZE ++;
+    while (!best_node->free)//caminha até o primeiro nodo livre
+        best_node = best_node->next;
+    node_aux = best_node;
+    
+    
+    int count = -1;
+    for (int i = 0; i < SIZE-1; i++)
+    {   
+        if (node_aux->free && node_aux->size - size <= best_node->size - size && node_aux->size - size >= 0 && node_aux->size >= size)
+        {
+            best_node = node_aux;
+            count = i;
+        }
+        node_aux = node_aux->next;     
+    }
+    insert_mem(best_node, new_node, count);
 }
+
 
 /*
 ----------------------------------------------------------
@@ -147,34 +342,77 @@ Saída:
     se o elemeto não foi removido retirna "false"
 ----------------------------------------------------------
 */
-bool removeList(int pos)
+bool removeMem(int elem)
 {
-    if (pos >= SIZE) //Posição fora da lista
-        return false;
+    struct Node* node_aux = HEADER;
+    
+    while (node_aux->data != elem)//caminha ate o processo que será removido
+        node_aux = node_aux->next;
+    FREE_SPACE+= node_aux->size;
 
-    if (pos == 0) // Remove da primeira posição da lista
+    if (node_aux->data == HEADER->data)
     {
-        HEADER = HEADER -> next;
-        SIZE--;
+        if (node_aux->next->free)
+        {
+            node_aux->next->size += node_aux->size;
+            HEADER = node_aux;
+            SIZE--;
+        }else
+        {
+            node_aux->free = true;
+        }
         return true;
     }
-    if (pos == SIZE-1)// Remove da última posição da lista
+    
+    if (node_aux->data == TAIL->data)
     {
-        TAIL = TAIL -> prev;
-        SIZE --;
+        if (node_aux->prev->free)
+        {
+            node_aux->prev->size += node_aux->size;
+            TAIL = node_aux;
+            SIZE--;
+        }else
+        {
+            node_aux->free = true;
+            node_aux->data = 0;
+        }
         return true;
     }
-    
-    
-    Node* node_aux = HEADER;
 
-    for (int i = 0; i < pos; i++) // Caminha até a posição "pos"
-        node_aux = node_aux -> next;
+
+    if (node_aux->prev->free)
+    {
+        if (node_aux->next->free)
+        {
+            node_aux->prev->size += node_aux->size;
+            node_aux->prev->size += node_aux->next->size;
+            node_aux->prev->next = node_aux->next->next;
+            free(node_aux->next);
+            SIZE -= 2;
+        }else
+        {
+            node_aux -> prev -> next = node_aux -> next;
+            node_aux -> next -> prev = node_aux -> prev;
+            node_aux -> prev -> size += node_aux -> size;
+            SIZE--;
+        }
+        
+        }else if (node_aux -> next -> free)
+        {
+            node_aux -> prev -> next = node_aux -> next;
+            node_aux -> next -> prev = node_aux -> prev;
+            node_aux -> next -> size += node_aux -> size;
+            SIZE--;
+        }else
+        {
+            node_aux->free = true;
+            node_aux->data = 0;
+        }
     
-    node_aux -> prev -> next = node_aux -> next;
-    node_aux -> next -> prev = node_aux -> prev;
-    free(node_aux);
-    SIZE--;
+    
+
+
+    // free(node_aux);
     return true;
     
 }
@@ -195,7 +433,13 @@ void printList()
     printf("\n |");
     for(int i=0; i<SIZE; i++)
     {
-        printf (" %d", node_aux -> data);
+        if (node_aux->free)
+        {
+            printf (" {%d}", node_aux -> size);
+        }else
+        {
+            printf (" %d", node_aux -> data);
+        }
         node_aux = node_aux -> next;
     }
     printf(" | \n");
