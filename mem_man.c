@@ -11,6 +11,8 @@ Rodar: ./mem_man <nome do arquivo>
 #include <stdio.h>
 #include <stdlib.h>
 #include "linkedList.h"
+#include "fixed_partition.h"
+#include <string.h>
 
 
 
@@ -18,12 +20,15 @@ Rodar: ./mem_man <nome do arquivo>
 void readfile(char* name, int polit/*0 = best-fit, 1= worst-fit, 2 = first-fit, 3 = next-fit*/)
 {
     FILE* data = fopen(name, "r");
-   
+    
     if(data == NULL)
-   {
-      printf("Error! \n");   
-      exit(1);             
-   }
+    {
+        printf("Error! \n");   
+        exit(1);             
+    }
+
+    int proc;
+    bool (*insert_function)(int, int);
     char buff[255];
     fgets(buff, 255, data);
     char *buff_aux = buff;
@@ -32,18 +37,37 @@ void readfile(char* name, int polit/*0 = best-fit, 1= worst-fit, 2 = first-fit, 
         switch (polit)
         {
         case 0:
+            insert_function = &insert_best_fit;
         case 1:
+            insert_function = &insert_worst_fit;
         case 2:
+            insert_function = &insert_first_fit;
         case 3:
+            insert_function = &insert_next_fit;
             break;
-        
         default:
             break;
         }
         while (*buff_aux != '(')
             buff_aux++;
         buff_aux ++;
-         printf("%c", *buff_aux); 
+        proc = (int)*buff_aux;
+        buff_aux +=2;
+        char char_size[4];
+        int i = 0;
+        while (1)
+        {
+            buff_aux ++;
+            if(*buff_aux == ')')
+                break;
+            char_size[i] = *buff_aux;
+            i++;
+            
+        }
+        printf("%s \n", char_size);
+        
+
+        
 
 
 
@@ -64,45 +88,8 @@ void readfile(char* name, int polit/*0 = best-fit, 1= worst-fit, 2 = first-fit, 
 
 int main(int argc, char** argv)
 {
-    // int polit = atoi(argv[2]);
-    initList(64);
-    printList();
-    insert_best_fit(1,16);
-    printList();
-    insert_best_fit(2,17);
-    printList();
-    insert_best_fit(3,16);
-    printList();
-    removeMem(2);
-    printList();
-    insert_first_fit(5,1);
-    printList();
-    insert_first_fit(6,1);
-    printList();
-    insert_first_fit(7,1);
-    printList();
-    insert_first_fit(8,1);
-    printList();
-    insert_first_fit(9,12);
-    removeMem(7);
-    printList();
-    removeMem(5);
-    printList();
-    removeMem(1);
-    insert_next_fit(12,11);
-    printList();
-    insert_next_fit(10,1);
-    printList();
-    insert_next_fit(11,2);
-    printList();
-    insert_next_fit(13,4);
-    // insert_next_fit(10,1);
-    // insert_next_fit(10,1);
-
-
-
-
-    printList();
+    int poli = atoi(argv[2]);
+    readfile(argv[1], poli);
 
 }
 

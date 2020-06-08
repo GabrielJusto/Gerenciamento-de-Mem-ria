@@ -179,8 +179,7 @@ bool insert_next_fit(int elem, int size)
     
     }
     printf("passei do if\n");
-    insert_mem(NEXT_FIT_PT, new_node, count);
-
+    return insert_mem(NEXT_FIT_PT, new_node, count);
 }
 bool insert_first_fit(int elem, int size)
 {
@@ -221,7 +220,7 @@ bool insert_first_fit(int elem, int size)
         node_aux = node_aux->next;     
     }
 
-    insert_mem(first_node, new_node, count);  
+    return insert_mem(first_node, new_node, count);  
 }
 
 
@@ -327,7 +326,8 @@ bool insert_best_fit(int elem, int size)
         }
         node_aux = node_aux->next;     
     }
-    insert_mem(best_node, new_node, count);
+    return insert_mem(best_node, new_node, count);
+    
 }
 
 
