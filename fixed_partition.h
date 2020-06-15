@@ -28,7 +28,7 @@ void init_memory(int memory_size, int partition_size)
 
 }
 
-bool insert_memory(int elem, int size)
+bool insert_fixed_part(int elem, int size)
 {
     if (FREE_SLOTS == 0 || size > PART_SIZE)
     {
@@ -48,35 +48,38 @@ bool insert_memory(int elem, int size)
     return true;
 }
 
-void remove_mem(int elem)
+bool remove_fixed_part(int elem)
 {
     struct Partition* part_aux = MEMORY;
     for (int i = 0; i < PARTITIONS; i++)
     {
         if(part_aux->data == elem)
         {
-            part_aux->free = false;
+            part_aux->free = true;
             part_aux->data = 0;
         }
         part_aux++;
     }
+    return true;
 }
 
-void print_mem()
+void print_fixed_part()
 {
     struct Partition* part_aux = MEMORY;
-    printf("\n | ");
+    printf("\n |");
     for (int i = 0; i < PARTITIONS; i++)
     {
         if(part_aux->data == 0)
         {
-            printf("{%d} ", PART_SIZE);
+            printf(" %d ", PART_SIZE);
         }
         else
         {
-            printf("%d ", part_aux->data);
+            printf(" %c ", part_aux->data);
         }
         part_aux++;
+        printf("|");
     }
-    printf("| \n");
+    printf("\n");
 }
+    

@@ -146,7 +146,7 @@ bool insert_next_fit(int elem, int size)
 
     struct Node* node_aux = NEXT_FIT_PT;
     int count = -1;
-    for (int i = 0; i < SIZE-1; i++)
+    for (int i = 0; i < SIZE; i++)
     {   
         // printf("next: %d, count: %d, next->free %d, next->size %d \n", NEXT_FIT_PT->data, NEXT_COUNT, NEXT_FIT_PT->free, NEXT_FIT_PT->size);
         // printf("aux: %d, count: %d, aux->free %d, aux->size %d \n", node_aux->data, NEXT_COUNT, node_aux->free, node_aux->size);
@@ -163,7 +163,7 @@ bool insert_next_fit(int elem, int size)
         }
         
         
-        if (NEXT_COUNT == SIZE-1)
+        if (NEXT_COUNT == SIZE)
         {
             // printf("entrei qui %d \n", NEXT_COUNT);
             node_aux = HEADER;
@@ -207,7 +207,7 @@ bool insert_first_fit(int elem, int size)
     struct Node* first_node = node_aux;
 
     int count = -1;
-    for (int i = 0; i < SIZE-1; i++)
+    for (int i = 0; i < SIZE; i++)
     {   
         if (node_aux->free && node_aux->size >= size)
         {
@@ -259,7 +259,7 @@ bool insert_worst_fit(int elem, int size)
     node_aux = worst_node;
 
     int count = -1;
-    for (int i = 0; i < SIZE-1; i++)
+    for (int i = 0; i < SIZE; i++)
     {   
         if (node_aux->free && node_aux->size >= worst_node->size && node_aux->size >= size)
         {
@@ -284,7 +284,6 @@ Entradas:
 */
 bool insert_best_fit(int elem, int size)
 {
-    printf("cheguei best \n");
     if (size > FREE_SPACE)
     {
         printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %c \n", elem);
@@ -315,7 +314,7 @@ bool insert_best_fit(int elem, int size)
     
     
     int count = -1;
-    for (int i = 0; i < SIZE-1; i++)
+    for (int i = 0; i < SIZE; i++)
     {   
         if (node_aux->free && node_aux->size - size <= best_node->size - size && node_aux->size - size >= 0 && node_aux->size >= size)
         {
@@ -340,7 +339,7 @@ Saída:
     se o elemeto não foi removido retirna "false"
 ----------------------------------------------------------
 */
-bool removeMem(int elem)
+bool remove_mem(int elem)
 {
     struct Node* node_aux = HEADER;
     
@@ -422,28 +421,29 @@ printList()
 imprime os elementos da lista
 ------------------------------
 */
-void printList()
+void print_mem()
 {
     Node* node_aux = HEADER;
     printf (" ");
-    for(int i=0; i<SIZE*2 + 3; i++)
-        printf("-");
+    // for(int i=0; i<SIZE*4; i++)
+    //     printf("-");
     printf("\n |");
     for(int i=0; i<SIZE; i++)
     {
         if (node_aux->free)
         {
-            printf (" {%d}", node_aux -> size);
+            printf (" %d", node_aux -> size);
         }else
         {
             printf (" %c", node_aux -> data);
         }
         node_aux = node_aux -> next;
+        printf(" |");
     }
-    printf(" | \n");
-    printf (" ");
-    for(int i=0; i<SIZE*2 + 3; i++)
-        printf("-");
+    
+    printf ("\n");
+    // for(int i=0; i<SIZE*4 ; i++)
+    //     printf("-");
     printf("\n");
 }
 
