@@ -66,9 +66,8 @@ bool insert_mem(struct Node *node_free, struct Node *new_node, int pos)
     int elem = new_node->data;
      if(pos == -1)//não encontrou nenhum espaço
     {
-        printf("foi aqui \n");
         // printf("elem %d, size %d, aux %d, aux_size %d \n", elem, size,node_aux->data, node_aux->size);
-        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %d \n", elem);
+        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %c \n", elem);
         return false;
     }
 
@@ -97,7 +96,6 @@ bool insert_mem(struct Node *node_free, struct Node *new_node, int pos)
 
         SIZE ++;
         FREE_SPACE -= size;
-        printf("eh tail \n");
         return true;
     }
 
@@ -126,7 +124,7 @@ bool insert_next_fit(int elem, int size)
 {
     if (size > FREE_SPACE)
     {
-        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %d \n", elem);
+        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %c \n", elem);
         return false;
     }
 
@@ -178,14 +176,14 @@ bool insert_next_fit(int elem, int size)
          
     
     }
-    printf("passei do if\n");
     return insert_mem(NEXT_FIT_PT, new_node, count);
 }
 bool insert_first_fit(int elem, int size)
 {
+
     if (size > FREE_SPACE)
     {
-        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %d \n", elem);
+        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %c \n", elem);
         return false;
     }
 
@@ -233,7 +231,7 @@ bool insert_worst_fit(int elem, int size)
 {
     if (size > FREE_SPACE)
     {
-        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %d \n", elem);
+        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %c \n", elem);
         return false;
     }
 
@@ -263,7 +261,7 @@ bool insert_worst_fit(int elem, int size)
     int count = -1;
     for (int i = 0; i < SIZE-1; i++)
     {   
-        if (node_aux->free && node_aux->size - size >= worst_node->size - size && node_aux->size >= size)
+        if (node_aux->free && node_aux->size >= worst_node->size && node_aux->size >= size)
         {
             worst_node = node_aux;
             count = i;
@@ -286,10 +284,10 @@ Entradas:
 */
 bool insert_best_fit(int elem, int size)
 {
-    
+    printf("cheguei best \n");
     if (size > FREE_SPACE)
     {
-        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %d \n", elem);
+        printf("ESPAÇO INSUFICIENTE DE MEMÓRIA ao tentar adicionar o processo %c \n", elem);
         return false;
     }
 
@@ -355,7 +353,7 @@ bool removeMem(int elem)
         if (node_aux->next->free)
         {
             node_aux->next->size += node_aux->size;
-            HEADER = node_aux;
+            HEADER = node_aux->next;
             SIZE--;
         }else
         {
@@ -438,7 +436,7 @@ void printList()
             printf (" {%d}", node_aux -> size);
         }else
         {
-            printf (" %d", node_aux -> data);
+            printf (" %c", node_aux -> data);
         }
         node_aux = node_aux -> next;
     }
